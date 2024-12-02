@@ -13,6 +13,7 @@ const gameBoard = (function () {
   const getBoard = () => board;
 
   const placeToken = (token, coordinates) => {
+    // Check if coordinates are within the game board:
     if (
       coordinates[0] >= board.length ||
       coordinates[1] >= board[coordinates[0]].length
@@ -20,6 +21,7 @@ const gameBoard = (function () {
       alert("Your coordinates are not valid");
       return false;
     }
+    // Check if coordinate doesn't hold a token yet and place item if still unoccupied:
     if (!board[coordinates[0]][coordinates[1]]) {
       board[coordinates[0]].splice(coordinates[1], 1, token);
       return true;
