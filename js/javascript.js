@@ -98,17 +98,19 @@ function playGame() {
     counter = 0;
 
     // Check win diagonally-reverse:
-    let j = gameBoard.getBoard().length - 1;
-    for (let i = 0; i < gameBoard.getBoard().length; i++) {
+    for (
+      let i = 0, j = gameBoard.getBoard().length - 1;
+      i < gameBoard.getBoard().length, j >= 0;
+      i++, j--
+    ) {
       if (gameBoard.getBoard()[i][j] === getCurrentPlayer().token) {
         counter++;
         if (counter === 3) isWinner = true;
       }
-      j--;
     }
     counter = 0;
 
-    console.log(isWinner);
+    return isWinner;
   };
 
   const playRound = () => {
