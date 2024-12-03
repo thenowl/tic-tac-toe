@@ -94,19 +94,19 @@ function playGame() {
         counter++;
         if (counter === 3) isWinner = true;
       }
-      counter = 0;
     }
+    counter = 0;
 
     // Check win diagonally-reverse:
-    for (let i = gameBoard.getBoard().length - 1; i >= 0; i--) {
-      let j = gameBoard.getBoard().length - 1;
+    let j = gameBoard.getBoard().length - 1;
+    for (let i = 0; i < gameBoard.getBoard().length; i++) {
       if (gameBoard.getBoard()[i][j] === getCurrentPlayer().token) {
         counter++;
         if (counter === 3) isWinner = true;
       }
-      counter = 0;
       j--;
     }
+    counter = 0;
 
     console.log(isWinner);
   };
@@ -126,8 +126,8 @@ function playGame() {
     if (isWinner()) {
       return console.log(`${getCurrentPlayer().playerName} has won the game`);
     }
-    // switchTurns();
-    // newRound();
+    switchTurns();
+    newRound();
     playRound();
   };
 
@@ -138,5 +138,3 @@ function playGame() {
 }
 
 playGame();
-
-// console.log(gameBoard.getBoard()[0].length);
