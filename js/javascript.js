@@ -49,6 +49,7 @@ function createPlayers() {
 
 function playGame() {
   const players = createPlayers();
+  const board = gameBoard.getBoard();
   let currentPlayer = players[0];
 
   const switchTurns = () => {
@@ -58,29 +59,27 @@ function playGame() {
   const getCurrentPlayer = () => currentPlayer;
 
   const newRound = () => {
-    gameBoard.getBoard();
+    board;
     console.log(`${getCurrentPlayer().playerName}'s turn.`);
   };
 
-  const isWinner = () => {
+  const isWinner = (board) => {
     let isWinner = false;
     let counter = 0;
 
     // Check win by columns:
     if (
-      gameBoard
-        .getBoard()
-        .some((column) =>
-          column.every((cell) => cell === getCurrentPlayer().token)
-        )
+      board.some((column) =>
+        column.every((cell) => cell === getCurrentPlayer().token)
+      )
     ) {
       isWinner = true;
     }
 
     // Check win by rows:
-    for (let i = 0; i < gameBoard.getBoard().length; i++) {
-      for (let j = 0; j < gameBoard.getBoard()[i].length; j++) {
-        if (gameBoard.getBoard()[j][i] === getCurrentPlayer().token) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (board[j][i] === getCurrentPlayer().token) {
           counter++;
           if (counter === 3) isWinner = true;
         }
@@ -89,8 +88,8 @@ function playGame() {
     }
 
     // Check win diagonally:
-    for (let i = 0; i < gameBoard.getBoard().length; i++) {
-      if (gameBoard.getBoard()[i][i] === getCurrentPlayer().token) {
+    for (let i = 0; i < board.length; i++) {
+      if (board[i][i] === getCurrentPlayer().token) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -98,12 +97,8 @@ function playGame() {
     counter = 0;
 
     // Check win diagonally-reverse:
-    for (
-      let i = 0, j = gameBoard.getBoard().length - 1;
-      i < gameBoard.getBoard().length, j >= 0;
-      i++, j--
-    ) {
-      if (gameBoard.getBoard()[i][j] === getCurrentPlayer().token) {
+    for (let i = 0, j = board.length - 1; i < board.length, j >= 0; i++, j--) {
+      if (board[i][j] === getCurrentPlayer().token) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -111,6 +106,27 @@ function playGame() {
     counter = 0;
 
     return isWinner;
+  };
+
+  const isTieGame = function () {
+    let isTieGame = false;
+
+    if (!board.some((column) => column.some((cell) => cell === null))) {
+      isTieGame = true;
+    }
+    const potentialBoard = board.map((column) =>
+      column.map((cell) => {
+        if (cell === null) {
+          return (cell = getCurrentPlayer().token);
+        } else {
+          return (cell = cell);
+        }
+      })
+    );
+
+    if (isWinner(potentialBoard)) isTieGame = false;
+
+    return isTieGame;
   };
 
   const playRound = () => {
@@ -125,8 +141,11 @@ function playGame() {
     );
 
     console.log(gameBoard.getBoard());
-    if (isWinner()) {
+    if (isWinner(board)) {
       return console.log(`${getCurrentPlayer().playerName} has won the game`);
+    }
+    if (isTieGame()) {
+      return console.log("It's a tie game!");
     }
     switchTurns();
     newRound();
