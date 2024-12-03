@@ -21,6 +21,7 @@ const gameBoard = (function () {
       alert("Your coordinates are not valid");
       return false;
     }
+
     // Check if coordinate doesn't hold a token yet and place item if still unoccupied:
     if (!board[coordinates[0]][coordinates[1]]) {
       board[coordinates[0]].splice(coordinates[1], 1, token);
@@ -39,7 +40,9 @@ function createPlayers() {
 
   for (let i = 0; i < 2; i++) {
     let token = i + 1;
+    // Will be retrieved from input field once UI is set up!!!
     let playerName = prompt("Enter your name");
+
     if (!playerName) playerName = `Player${token}`;
     players.push({ playerName, token });
   }
@@ -111,9 +114,13 @@ function playGame() {
   const isTieGame = function () {
     let isTieGame = false;
 
+    // If no empty fields are left --> it's a tie game since winner has been checked before and must be false:
     if (!board.some((column) => column.some((cell) => cell === null))) {
       isTieGame = true;
     }
+
+    // Replace all empty fields with current player's token and perform
+    // isWinner() check to see if there is still a chance to win the game:
     const potentialBoard = board.map((column) =>
       column.map((cell) => {
         if (cell === null) {
@@ -130,23 +137,31 @@ function playGame() {
   };
 
   const playRound = () => {
+    // Will be retrieved from click-event once UI is set up!!!
     const coordinates = Array.from(prompt("Enter valid coordinates"));
 
+    // Place token on board:
     const move = gameBoard.placeToken(getCurrentPlayer().token, coordinates);
+
     if (!move) playRound();
+
     console.log(
       `${getCurrentPlayer().playerName} placed ${
         getCurrentPlayer().token
       } on ${coordinates}`
     );
 
+    // Can be deleted once UI is set up!!!
     console.log(gameBoard.getBoard());
+
     if (isWinner(board)) {
       return console.log(`${getCurrentPlayer().playerName} has won the game`);
     }
+
     if (isTieGame()) {
       return console.log("It's a tie game!");
     }
+
     switchTurns();
     newRound();
     playRound();
