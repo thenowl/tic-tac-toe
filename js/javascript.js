@@ -63,11 +63,52 @@ function playGame() {
   };
 
   const isWinner = () => {
-    const isWinner = gameBoard
-      .getBoard()
-      .some((column) => column.every((row) => row === 1 || row === 2));
+    let isWinner = false;
+    let counter = 0;
 
-    // TO BE CONTINUED
+    // Check win by columns:
+    if (
+      gameBoard
+        .getBoard()
+        .some((column) =>
+          column.every((cell) => cell === getCurrentPlayer().token)
+        )
+    ) {
+      isWinner = true;
+    }
+
+    // Check win by rows:
+    for (let i = 0; i < gameBoard.getBoard().length; i++) {
+      for (let j = 0; j < gameBoard.getBoard()[i].length; j++) {
+        if (gameBoard.getBoard()[j][i] === getCurrentPlayer().token) {
+          counter++;
+          if (counter === 3) isWinner = true;
+        }
+      }
+      counter = 0;
+    }
+
+    // Check win diagonally:
+    for (let i = 0; i < gameBoard.getBoard().length; i++) {
+      if (gameBoard.getBoard()[i][i] === getCurrentPlayer().token) {
+        counter++;
+        if (counter === 3) isWinner = true;
+      }
+      counter = 0;
+    }
+
+    // Check win diagonally-reverse:
+    for (let i = gameBoard.getBoard().length - 1; i >= 0; i--) {
+      let j = gameBoard.getBoard().length - 1;
+      if (gameBoard.getBoard()[i][j] === getCurrentPlayer().token) {
+        counter++;
+        if (counter === 3) isWinner = true;
+      }
+      counter = 0;
+      j--;
+    }
+
+    console.log(isWinner);
   };
 
   const playRound = () => {
@@ -82,9 +123,11 @@ function playGame() {
     );
 
     console.log(gameBoard.getBoard());
-    isWinner();
-    switchTurns();
-    newRound();
+    if (isWinner()) {
+      return console.log(`${getCurrentPlayer().playerName} has won the game`);
+    }
+    // switchTurns();
+    // newRound();
     playRound();
   };
 
@@ -95,3 +138,5 @@ function playGame() {
 }
 
 playGame();
+
+// console.log(gameBoard.getBoard()[0].length);
