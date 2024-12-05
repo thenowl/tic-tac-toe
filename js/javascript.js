@@ -12,6 +12,10 @@ const gameBoard = (function () {
 
   const getBoard = () => board;
 
+  const isCellAvailable = (coordinates) => {
+    return !board[coordinates[0]][coordinates[1]];
+  };
+
   const placeToken = (token, coordinates) => {
     // Check if coordinates are within the game board:
     if (
@@ -23,7 +27,7 @@ const gameBoard = (function () {
     }
 
     // Check if coordinate doesn't hold a token yet and place item if still unoccupied:
-    if (!board[coordinates[0]][coordinates[1]]) {
+    if (isCellAvailable()) {
       board[coordinates[0]].splice(coordinates[1], 1, token);
       return true;
     } else {
@@ -32,7 +36,7 @@ const gameBoard = (function () {
     }
   };
 
-  return { getBoard, placeToken };
+  return { getBoard, isCellAvailable, placeToken };
 })();
 
 function createPlayers() {
@@ -41,7 +45,7 @@ function createPlayers() {
   for (let i = 0; i < 2; i++) {
     let token = i + 1;
     // Will be retrieved from input field once UI is set up!!!
-    let playerName = prompt("Enter your name");
+    let playerName;
 
     if (!playerName) playerName = `Player${token}`;
     players.push({ playerName, token });
@@ -138,7 +142,7 @@ function playGame() {
 
   const playRound = () => {
     // Will be retrieved from click-event once UI is set up!!!
-    const coordinates = Array.from(prompt("Enter valid coordinates"));
+    const coordinates = displayController.getCoordinates();
 
     // Place token on board:
     const move = gameBoard.placeToken(getCurrentPlayer().token, coordinates);
@@ -167,10 +171,68 @@ function playGame() {
     playRound();
   };
 
-  newRound();
-  playRound();
+  // newRound();
+  // playRound();
 
   return { playRound, getCurrentPlayer, isWinner };
 }
 
-playGame();
+// playGame();
+
+const displayController = (function () {
+  const gameBoardContainer = document.querySelector("#gameBoardContainer");
+  const currentPlayer = playGame().getCurrentPlayer();
+
+  (function renderBoard() {
+    gameBoard.getBoard().map((column, columnIndex) =>
+      column.map((cell, cellIndex) => {
+        const cellWrapper = document.createElement("div");
+        cellWrapper.classList.add("cell-wrapper");
+        gameBoardContainer.appendChild(cellWrapper);
+
+        cell = document.createElement("div");
+        cell.setAttribute("id", `cell-${columnIndex}${cellIndex}`);
+        cell.classList.add("cell");
+        cell.innerText = "";
+        cellWrapper.appendChild(cell);
+      })
+    );
+  })();
+
+  function setName() {}
+
+  function getCoordinates(cell) {
+    return cell.getAttribute("id").split("-").splice(1, 1)[0].split("");
+  }
+
+  function currentToken() {
+    const token = [];
+
+    currentPlayer.token === 1
+      ? token.push("X", "var(--playerOneTokenColor)")
+      : token.push("O", "var(--playerTwoTokenColor)");
+
+    return token;
+  }
+
+  gameBoardContainer.addEventListener("mouseover", (e) => {
+    const cell = e.target;
+
+    if (cell.id !== undefined && cell.id !== "") {
+      if (gameBoard.isCellAvailable(getCoordinates(cell))) {
+        cell.innerText = `${currentToken()[0]}`;
+        cell.style.cssText = `color: ${
+          currentToken()[1]
+        }; -webkit-text-fill-color: var(--bgColor); -webkit-text-stroke: 2px ${
+          currentToken()[1]
+        }`;
+
+        gameBoardContainer.addEventListener("mouseout", (e) => {
+          cell.innerText = "";
+        });
+      }
+    }
+  });
+
+  return { getCoordinates };
+})();

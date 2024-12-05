@@ -6,10 +6,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tic Tac Toe</title>
   <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
 <body>
+  <header>
+    <h1>
+      <span class="player-one-token-color">X</span>
+      <span class="player-two-token-color">O</span>
+    </h1>
+  </header>
 
+
+
+  <div class="game-board-container" id="gameBoardContainer">
+  </div>
+
+  <div class="results">
+    <div class="player-results player-one">
+      <form action="#" method="post" id="addPlayerOneName">
+        <label for="playerOneNameInput">Enter name:</label>
+        <input type="text" name="playerOneNameInput" id="playerOneNameInput" placeholder="Player1" value="Player1">
+      </form>
+      <p id="playerOneName">Player1</p>
+      <i class="fa-regular fa-pen-to-square" id="changePlayerOneName"></i>
+      <p class="playerResultText" id="playerOneResultText">0</p>
+    </div>
+
+    <div class="tie-games">
+      <p>Ties</p>
+      <p id="tieText">0</p>
+    </div>
+
+    <div class="player-results player-two">
+      <form action="#" method="post" id="addPlayerTwoName">
+        <label for="playerTwoNameInput">Enter name:</label>
+        <input type="text" name="playerTwoNameInput" id="playerTwoNameInput" placeholder="Player2" value="Player2">
+      </form>
+      <p id="playerTwoName">Player2</p>
+      <i class="fa-regular fa-pen-to-square" id="changePlayerTwoName"></i>
+      <p class="playerResultText" id="playerTwoResultText">0</p>
+    </div>
+  </div>
   <script src="./js/javascript.js"></script>
 </body>
 
