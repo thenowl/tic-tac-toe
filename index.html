@@ -12,24 +12,22 @@
 <body>
   <header>
     <h1>
-      <span class="player-one-token-color">X</span>
-      <span class="player-two-token-color">O</span>
+      <span class="logo-x">X</span>
+      <span class="logo-o">O</span>
     </h1>
   </header>
 
-
-
-  <div class="game-board-container" id="gameBoardContainer">
-  </div>
+  <div class="game-board-container" id="gameBoardContainer"></div>
 
   <div class="results">
     <div class="player-results player-one">
-      <form action="#" method="post" id="addPlayerOneName">
+      <div id="playerOneInputContainer" class="input-container">
         <label for="playerOneNameInput">Enter name:</label>
-        <input type="text" name="playerOneNameInput" id="playerOneNameInput" placeholder="Player1" value="Player1">
-      </form>
+        <input type="text" name="playerOneNameInput" id="playerOneNameInput" placeholder="Player1" value="Player1"
+          minlength="1" maxlength="8">
+      </div>
       <p id="playerOneName">Player1</p>
-      <i class="fa-regular fa-pen-to-square" id="changePlayerOneName"></i>
+      <i class="fa-regular fa-pen-to-square" id="playerOneInputDisplay"></i>
       <p class="playerResultText" id="playerOneResultText">0</p>
     </div>
 
@@ -39,16 +37,19 @@
     </div>
 
     <div class="player-results player-two">
-      <form action="#" method="post" id="addPlayerTwoName">
+      <div id="playerTwoInputContainer" class="input-container">
         <label for="playerTwoNameInput">Enter name:</label>
-        <input type="text" name="playerTwoNameInput" id="playerTwoNameInput" placeholder="Player2" value="Player2">
-      </form>
+        <input type="text" name="playerTwoNameInput" id="playerTwoNameInput" placeholder="Player2" value="Player2"
+          minlength="1" maxlength="8">
+      </div>
       <p id="playerTwoName">Player2</p>
-      <i class="fa-regular fa-pen-to-square" id="changePlayerTwoName"></i>
+      <i class="fa-regular fa-pen-to-square" id="playerTwoInputDisplay"></i>
       <p class="playerResultText" id="playerTwoResultText">0</p>
     </div>
   </div>
+
   <script src="./js/javascript.js"></script>
+
 </body>
 
 </html>

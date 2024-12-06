@@ -26,14 +26,8 @@ const gameBoard = (function () {
       return false;
     }
 
-    // Check if coordinate doesn't hold a token yet and place item if still unoccupied:
-    if (isCellAvailable()) {
-      board[coordinates[0]].splice(coordinates[1], 1, token);
-      return true;
-    } else {
-      alert("You can't place a token here");
-      return false;
-    }
+    board[coordinates[0]].splice(coordinates[1], 1, token);
+    return true;
   };
 
   return { getBoard, isCellAvailable, placeToken };
@@ -41,21 +35,25 @@ const gameBoard = (function () {
 
 function createPlayers() {
   const players = [];
+  let playerName;
 
   for (let i = 0; i < 2; i++) {
     let token = i + 1;
-    // Will be retrieved from input field once UI is set up!!!
-    let playerName;
+    let score = 0;
 
     if (!playerName) playerName = `Player${token}`;
-    players.push({ playerName, token });
+    players.push({ playerName, token, score });
   }
 
-  return players;
+  function setName(input, index) {
+    return (players[index].playerName = `${input}`);
+  }
+
+  return { players, setName };
 }
 
 function playGame() {
-  const players = createPlayers();
+  const players = createPlayers().players;
   const board = gameBoard.getBoard();
   let currentPlayer = players[0];
 
@@ -171,8 +169,7 @@ function playGame() {
     playRound();
   };
 
-  // newRound();
-  // playRound();
+  newRound();
 
   return { playRound, getCurrentPlayer, isWinner };
 }
@@ -184,8 +181,8 @@ const displayController = (function () {
   const currentPlayer = playGame().getCurrentPlayer();
 
   (function renderBoard() {
-    gameBoard.getBoard().map((column, columnIndex) =>
-      column.map((cell, cellIndex) => {
+    gameBoard.getBoard().map((column, cellIndex) =>
+      column.map((cell, columnIndex) => {
         const cellWrapper = document.createElement("div");
         cellWrapper.classList.add("cell-wrapper");
         gameBoardContainer.appendChild(cellWrapper);
@@ -199,7 +196,58 @@ const displayController = (function () {
     );
   })();
 
-  function setName() {}
+  function toggleNameInput(inputContainer, input) {
+    if (window.getComputedStyle(inputContainer).visibility === "hidden") {
+      inputContainer.style.visibility = "visible";
+      input.setAttribute("value", "");
+      input.focus();
+    } else {
+      inputContainer.style.visibility = "hidden";
+    }
+  }
+
+  const playerOneInputDisplay = document.querySelector(
+    "#playerOneInputDisplay"
+  );
+  const playerTwoInputDisplay = document.querySelector(
+    "#playerTwoInputDisplay"
+  );
+  const playerOneInputContainer = document.querySelector(
+    "#playerOneInputContainer"
+  );
+  const playerTwoInputContainer = document.querySelector(
+    "#playerTwoInputContainer"
+  );
+  const playerOneNameInput = document.querySelector("#playerOneNameInput");
+  const playerTwoNameInput = document.querySelector("#playerTwoNameInput");
+
+  const playerOneName = document.querySelector("#playerOneName");
+  const playerTwoName = document.querySelector("#playerTwoName");
+
+  playerOneInputDisplay.addEventListener("click", () => {
+    toggleNameInput(playerOneInputContainer, playerOneNameInput);
+  });
+
+  playerTwoInputDisplay.addEventListener("click", () => {
+    toggleNameInput(playerTwoInputContainer, playerTwoNameInput);
+  });
+
+  function setName(input, nameField, index) {
+    if (input.value) {
+      createPlayers().players[index].playerName = input.value;
+      nameField.innerText = `${input.value}`;
+    } else {
+      nameField.innerText = `Player${createPlayers().players[index].token}`;
+    }
+  }
+
+  playerOneNameInput.addEventListener("input", () => {
+    setName(playerOneNameInput, playerOneName, 0);
+  });
+
+  playerTwoNameInput.addEventListener("input", () => {
+    setName(playerTwoNameInput, playerTwoName, 1);
+  });
 
   function getCoordinates(cell) {
     return cell.getAttribute("id").split("-").splice(1, 1)[0].split("");
@@ -215,6 +263,8 @@ const displayController = (function () {
     return token;
   }
 
+  // Hover over game board:
+
   gameBoardContainer.addEventListener("mouseover", (e) => {
     const cell = e.target;
 
@@ -228,10 +278,23 @@ const displayController = (function () {
         }`;
 
         gameBoardContainer.addEventListener("mouseout", (e) => {
-          cell.innerText = "";
+          if (gameBoard.isCellAvailable(getCoordinates(cell))) {
+            cell.innerText = "";
+          }
         });
       }
     }
+  });
+
+  // Place token on game board:
+
+  gameBoardContainer.addEventListener("click", (e) => {
+    const chosenCell = e.target;
+
+    gameBoard.placeToken(currentToken()[0], getCoordinates(chosenCell));
+    chosenCell.innerText = `${currentToken()[0]}`;
+    chosenCell.style.cssText = `color: ${currentToken()[1]}`;
+    chosenCell.classList.add("cell-taken");
   });
 
   return { getCoordinates };
