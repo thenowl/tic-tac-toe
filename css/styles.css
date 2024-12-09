@@ -126,6 +126,7 @@ h1 {
   font-size: clamp(5rem, 20vw, 8rem);
   font-weight: normal;
   display: flex;
+  user-select: none;
 }
 
 .logo-x,
@@ -152,6 +153,7 @@ h1 {
   background: radial-gradient(var(--gameBoardBorderColor), transparent 75%);
 
   cursor: pointer;
+  user-select: none;
 }
 
 .cell-wrapper {
@@ -188,7 +190,7 @@ h1 {
 
 .cell:active {
   cursor: grabbing;
-  scale: 0.9;
+  scale: 0.95;
 }
 
 .cell-taken,

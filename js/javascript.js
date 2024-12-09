@@ -33,11 +33,11 @@ const gameBoard = (function () {
   return { getBoard, isCellAvailable, placeToken };
 })();
 
-function createPlayers() {
+const createPlayers = (function () {
   const players = [];
-  let playerName;
 
   for (let i = 0; i < 2; i++) {
+    let playerName;
     let token = i + 1;
     let score = 0;
 
@@ -45,15 +45,19 @@ function createPlayers() {
     players.push({ playerName, token, score });
   }
 
-  function setName(input, index) {
+  const setName = (input, index) => {
     return (players[index].playerName = `${input}`);
-  }
+  };
 
-  return { players, setName };
-}
+  const raiseScore = (player) => {
+    player.score++;
+  };
 
-function playGame() {
-  const players = createPlayers().players;
+  return { players, setName, raiseScore };
+})();
+
+const playGame = (function () {
+  const players = createPlayers.players;
   const board = gameBoard.getBoard();
   let currentPlayer = players[0];
 
@@ -68,14 +72,15 @@ function playGame() {
     console.log(`${getCurrentPlayer().playerName}'s turn.`);
   };
 
-  const isWinner = (board) => {
+  const isWinner = () => {
+    const currentPlayerToken = getCurrentPlayer().token;
     let isWinner = false;
     let counter = 0;
 
     // Check win by columns:
     if (
       board.some((column) =>
-        column.every((cell) => cell === getCurrentPlayer().token)
+        column.every((cell) => cell === currentPlayerToken)
       )
     ) {
       isWinner = true;
@@ -84,7 +89,7 @@ function playGame() {
     // Check win by rows:
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
-        if (board[j][i] === getCurrentPlayer().token) {
+        if (board[j][i] === currentPlayerToken) {
           counter++;
           if (counter === 3) isWinner = true;
         }
@@ -94,7 +99,7 @@ function playGame() {
 
     // Check win diagonally:
     for (let i = 0; i < board.length; i++) {
-      if (board[i][i] === getCurrentPlayer().token) {
+      if (board[i][i] === currentPlayerToken) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -103,7 +108,7 @@ function playGame() {
 
     // Check win diagonally-reverse:
     for (let i = 0, j = board.length - 1; i < board.length, j >= 0; i++, j--) {
-      if (board[i][j] === getCurrentPlayer().token) {
+      if (board[i][j] === currentPlayerToken) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -116,7 +121,7 @@ function playGame() {
   const isTieGame = function () {
     let isTieGame = false;
 
-    // If no empty fields are left --> it's a tie game since winner has been checked before and must be false:
+    // If no empty fields are left --> tie game:
     if (!board.some((column) => column.some((cell) => cell === null))) {
       isTieGame = true;
     }
@@ -138,25 +143,12 @@ function playGame() {
     return isTieGame;
   };
 
-  const playRound = () => {
-    // Will be retrieved from click-event once UI is set up!!!
-    const coordinates = displayController.getCoordinates();
-
+  const playRound = (coordinates) => {
     // Place token on board:
-    const move = gameBoard.placeToken(getCurrentPlayer().token, coordinates);
+    gameBoard.placeToken(getCurrentPlayer().token, coordinates);
 
-    if (!move) playRound();
-
-    console.log(
-      `${getCurrentPlayer().playerName} placed ${
-        getCurrentPlayer().token
-      } on ${coordinates}`
-    );
-
-    // Can be deleted once UI is set up!!!
-    console.log(gameBoard.getBoard());
-
-    if (isWinner(board)) {
+    if (isWinner()) {
+      createPlayers.raiseScore(currentPlayer);
       return console.log(`${getCurrentPlayer().playerName} has won the game`);
     }
 
@@ -166,19 +158,15 @@ function playGame() {
 
     switchTurns();
     newRound();
-    playRound();
   };
 
-  newRound();
+  return { playRound, getCurrentPlayer };
+})();
 
-  return { playRound, getCurrentPlayer, isWinner };
-}
-
-// playGame();
-
-const displayController = (function () {
+(function displayController() {
   const gameBoardContainer = document.querySelector("#gameBoardContainer");
-  const currentPlayer = playGame().getCurrentPlayer();
+
+  // Game board builder:
 
   (function renderBoard() {
     gameBoard.getBoard().map((column, cellIndex) =>
@@ -196,7 +184,74 @@ const displayController = (function () {
     );
   })();
 
-  function toggleNameInput(inputContainer, input) {
+  // Extract coordinates from cell IDs set by renderBoard():
+
+  const getCoordinates = (cell) => {
+    return cell.getAttribute("id").split("-").splice(1, 1)[0].split("");
+  };
+
+  // Retrieve current token and current token color:
+
+  const currentToken = () => {
+    const currentPlayer = playGame.getCurrentPlayer();
+    const token = [];
+
+    currentPlayer.token === 1
+      ? token.push("X", "var(--playerOneTokenColor)")
+      : token.push("O", "var(--playerTwoTokenColor)");
+
+    return token;
+  };
+
+  // Hover over game board:
+
+  gameBoardContainer.addEventListener("mouseover", (e) => {
+    const cell = e.target;
+
+    if (
+      cell.id !== undefined &&
+      cell.id !== "" &&
+      gameBoard.isCellAvailable(getCoordinates(cell))
+    ) {
+      cell.innerText = `${currentToken()[0]}`;
+      cell.style.cssText = `color: ${
+        currentToken()[1]
+      }; -webkit-text-fill-color: var(--bgColor); -webkit-text-stroke: 2px ${
+        currentToken()[1]
+      }`;
+
+      gameBoardContainer.addEventListener("mouseout", () => {
+        if (gameBoard.isCellAvailable(getCoordinates(cell))) {
+          cell.innerText = "";
+        }
+      });
+    } else {
+      return;
+    }
+  });
+
+  // Place token on game board:
+
+  gameBoardContainer.addEventListener("mouseup", (e) => {
+    const chosenCell = e.target;
+
+    if (
+      chosenCell.id !== undefined &&
+      chosenCell.id !== "" &&
+      gameBoard.isCellAvailable(getCoordinates(chosenCell))
+    ) {
+      chosenCell.innerText = `${currentToken()[0]}`;
+      chosenCell.style.cssText = `color: ${currentToken()[1]}`;
+      chosenCell.classList.add("cell-taken");
+      playGame.playRound(getCoordinates(chosenCell));
+    } else {
+      return;
+    }
+  });
+
+  // Handling the name input for each player:
+
+  const toggleNameInputDisplay = (inputContainer, input) => {
     if (window.getComputedStyle(inputContainer).visibility === "hidden") {
       inputContainer.style.visibility = "visible";
       input.setAttribute("value", "");
@@ -204,7 +259,7 @@ const displayController = (function () {
     } else {
       inputContainer.style.visibility = "hidden";
     }
-  }
+  };
 
   const playerOneInputDisplay = document.querySelector(
     "#playerOneInputDisplay"
@@ -212,34 +267,33 @@ const displayController = (function () {
   const playerTwoInputDisplay = document.querySelector(
     "#playerTwoInputDisplay"
   );
-  const playerOneInputContainer = document.querySelector(
-    "#playerOneInputContainer"
-  );
-  const playerTwoInputContainer = document.querySelector(
-    "#playerTwoInputContainer"
-  );
   const playerOneNameInput = document.querySelector("#playerOneNameInput");
   const playerTwoNameInput = document.querySelector("#playerTwoNameInput");
-
   const playerOneName = document.querySelector("#playerOneName");
   const playerTwoName = document.querySelector("#playerTwoName");
 
   playerOneInputDisplay.addEventListener("click", () => {
-    toggleNameInput(playerOneInputContainer, playerOneNameInput);
+    const playerOneInputContainer = document.querySelector(
+      "#playerOneInputContainer"
+    );
+    toggleNameInputDisplay(playerOneInputContainer, playerOneNameInput);
   });
 
   playerTwoInputDisplay.addEventListener("click", () => {
-    toggleNameInput(playerTwoInputContainer, playerTwoNameInput);
+    const playerTwoInputContainer = document.querySelector(
+      "#playerTwoInputContainer"
+    );
+    toggleNameInputDisplay(playerTwoInputContainer, playerTwoNameInput);
   });
 
-  function setName(input, nameField, index) {
+  const setName = (input, nameField, index) => {
     if (input.value) {
-      createPlayers().players[index].playerName = input.value;
+      createPlayers.players[index].playerName = input.value;
       nameField.innerText = `${input.value}`;
     } else {
-      nameField.innerText = `Player${createPlayers().players[index].token}`;
+      nameField.innerText = `Player${createPlayers.players[index].token}`;
     }
-  }
+  };
 
   playerOneNameInput.addEventListener("input", () => {
     setName(playerOneNameInput, playerOneName, 0);
@@ -248,54 +302,4 @@ const displayController = (function () {
   playerTwoNameInput.addEventListener("input", () => {
     setName(playerTwoNameInput, playerTwoName, 1);
   });
-
-  function getCoordinates(cell) {
-    return cell.getAttribute("id").split("-").splice(1, 1)[0].split("");
-  }
-
-  function currentToken() {
-    const token = [];
-
-    currentPlayer.token === 1
-      ? token.push("X", "var(--playerOneTokenColor)")
-      : token.push("O", "var(--playerTwoTokenColor)");
-
-    return token;
-  }
-
-  // Hover over game board:
-
-  gameBoardContainer.addEventListener("mouseover", (e) => {
-    const cell = e.target;
-
-    if (cell.id !== undefined && cell.id !== "") {
-      if (gameBoard.isCellAvailable(getCoordinates(cell))) {
-        cell.innerText = `${currentToken()[0]}`;
-        cell.style.cssText = `color: ${
-          currentToken()[1]
-        }; -webkit-text-fill-color: var(--bgColor); -webkit-text-stroke: 2px ${
-          currentToken()[1]
-        }`;
-
-        gameBoardContainer.addEventListener("mouseout", (e) => {
-          if (gameBoard.isCellAvailable(getCoordinates(cell))) {
-            cell.innerText = "";
-          }
-        });
-      }
-    }
-  });
-
-  // Place token on game board:
-
-  gameBoardContainer.addEventListener("click", (e) => {
-    const chosenCell = e.target;
-
-    gameBoard.placeToken(currentToken()[0], getCoordinates(chosenCell));
-    chosenCell.innerText = `${currentToken()[0]}`;
-    chosenCell.style.cssText = `color: ${currentToken()[1]}`;
-    chosenCell.classList.add("cell-taken");
-  });
-
-  return { getCoordinates };
 })();
