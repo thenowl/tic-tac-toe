@@ -1,7 +1,7 @@
 const gameBoard = (function () {
   const rows = 3;
   const columns = 3;
-  const board = [];
+  let board = [];
 
   for (let i = 0; i < rows; i++) {
     board[i] = [];
@@ -30,7 +30,15 @@ const gameBoard = (function () {
     return true;
   };
 
-  return { getBoard, isCellAvailable, placeToken };
+  const reset = () => {
+    board = board.map((column) =>
+      column.map((cell) => {
+        return (cell = null);
+      })
+    );
+  };
+
+  return { getBoard, isCellAvailable, placeToken, reset };
 })();
 
 const createPlayers = (function () {
@@ -58,7 +66,7 @@ const createPlayers = (function () {
 
 const playGame = (function () {
   const players = createPlayers.players;
-  const board = gameBoard.getBoard();
+  let board = gameBoard.getBoard();
   let currentPlayer = players[0];
 
   const switchTurns = () => {
@@ -67,29 +75,24 @@ const playGame = (function () {
 
   const getCurrentPlayer = () => currentPlayer;
 
-  const newRound = () => {
-    board;
-    console.log(`${getCurrentPlayer().playerName}'s turn.`);
+  const getOpponent = () => {
+    return currentPlayer === players[0] ? players[1] : players[0];
   };
 
-  const isWinner = () => {
-    const currentPlayerToken = getCurrentPlayer().token;
+  const isWinner = (board, token) => {
+    const playerToken = token;
     let isWinner = false;
     let counter = 0;
 
     // Check win by columns:
-    if (
-      board.some((column) =>
-        column.every((cell) => cell === currentPlayerToken)
-      )
-    ) {
+    if (board.some((column) => column.every((cell) => cell === playerToken))) {
       isWinner = true;
     }
 
     // Check win by rows:
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
-        if (board[j][i] === currentPlayerToken) {
+        if (board[j][i] === playerToken) {
           counter++;
           if (counter === 3) isWinner = true;
         }
@@ -99,7 +102,7 @@ const playGame = (function () {
 
     // Check win diagonally:
     for (let i = 0; i < board.length; i++) {
-      if (board[i][i] === currentPlayerToken) {
+      if (board[i][i] === playerToken) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -108,7 +111,7 @@ const playGame = (function () {
 
     // Check win diagonally-reverse:
     for (let i = 0, j = board.length - 1; i < board.length, j >= 0; i++, j--) {
-      if (board[i][j] === currentPlayerToken) {
+      if (board[i][j] === playerToken) {
         counter++;
         if (counter === 3) isWinner = true;
       }
@@ -128,47 +131,67 @@ const playGame = (function () {
 
     // Replace all empty fields with current player's token and perform
     // isWinner() check to see if there is still a chance to win the game:
-    const potentialBoard = board.map((column) =>
-      column.map((cell) => {
-        if (cell === null) {
-          return (cell = getCurrentPlayer().token);
-        } else {
-          return (cell = cell);
-        }
-      })
-    );
+    const potentialWin = (player) => {
+      return board.map((column) =>
+        column.map((cell) => {
+          if (cell === null) {
+            return (cell = player);
+          } else {
+            return (cell = cell);
+          }
+        })
+      );
+    };
 
-    if (isWinner(potentialBoard)) isTieGame = false;
+    if (
+      !isWinner(
+        potentialWin(getCurrentPlayer().token),
+        getCurrentPlayer().token
+      ) &&
+      !isWinner(potentialWin(getOpponent().token), getOpponent().token)
+    ) {
+      isTieGame = true;
+    }
 
     return isTieGame;
   };
 
   const playRound = (coordinates) => {
+    const token = getCurrentPlayer().token;
     // Place token on board:
-    gameBoard.placeToken(getCurrentPlayer().token, coordinates);
+    gameBoard.placeToken(token, coordinates);
 
-    if (isWinner()) {
+    if (isWinner(board, token)) {
       createPlayers.raiseScore(currentPlayer);
-      return console.log(`${getCurrentPlayer().playerName} has won the game`);
+      return { isWinner: isWinner(board, token), isTieGame: false };
     }
 
     if (isTieGame()) {
-      return console.log("It's a tie game!");
+      return { isWinner: false, isTieGame: isTieGame() };
     }
 
     switchTurns();
-    newRound();
+
+    return { isWinner: false, isTieGame: false };
   };
 
-  return { playRound, getCurrentPlayer };
+  const reset = () => {
+    gameBoard.reset();
+    board = gameBoard.getBoard();
+    currentPlayer = players[0];
+  };
+
+  return { playRound, getCurrentPlayer, reset };
 })();
 
 (function displayController() {
   const gameBoardContainer = document.querySelector("#gameBoardContainer");
+  let startGame = false;
+  let roundEnd = false;
 
   // Game board builder:
 
-  (function renderBoard() {
+  function renderBoard() {
     gameBoard.getBoard().map((column, cellIndex) =>
       column.map((cell, columnIndex) => {
         const cellWrapper = document.createElement("div");
@@ -182,7 +205,41 @@ const playGame = (function () {
         cellWrapper.appendChild(cell);
       })
     );
-  })();
+  }
+
+  renderBoard();
+
+  // Start / Reset game:
+
+  const startResetButton = document.querySelector("#startResetButton");
+  const instructions = document.querySelector("#instructions");
+  const startMessage = instructions.innerHTML;
+
+  startResetButton.addEventListener("click", () => {
+    if (!startGame) {
+      roundEnd = false;
+      startGame = true;
+      startResetButton.innerHTML = `
+      <i class="fa-solid fa-rotate-left"></i>
+      Reset`;
+      gameBoardContainer.style.opacity = 1;
+      gameBoardContainer.style.cursor = "pointer";
+
+      instructions.innerText = `${
+        playGame.getCurrentPlayer().playerName
+      }'s turn...`;
+    } else {
+      playGame.reset();
+      startGame = false;
+      roundEnd = false;
+      startResetButton.innerText = "Start";
+      gameBoardContainer.innerText = "";
+      renderBoard();
+      gameBoardContainer.style.opacity = 0.1;
+      gameBoardContainer.style.cursor = "default";
+      instructions.innerHTML = `${startMessage}`;
+    }
+  });
 
   // Extract coordinates from cell IDs set by renderBoard():
 
@@ -209,6 +266,8 @@ const playGame = (function () {
     const cell = e.target;
 
     if (
+      startGame &&
+      !roundEnd &&
       cell.id !== undefined &&
       cell.id !== "" &&
       gameBoard.isCellAvailable(getCoordinates(cell))
@@ -234,8 +293,11 @@ const playGame = (function () {
 
   gameBoardContainer.addEventListener("mouseup", (e) => {
     const chosenCell = e.target;
+    let tieGames = 0;
 
     if (
+      startGame &&
+      !roundEnd &&
       chosenCell.id !== undefined &&
       chosenCell.id !== "" &&
       gameBoard.isCellAvailable(getCoordinates(chosenCell))
@@ -243,7 +305,28 @@ const playGame = (function () {
       chosenCell.innerText = `${currentToken()[0]}`;
       chosenCell.style.cssText = `color: ${currentToken()[1]}`;
       chosenCell.classList.add("cell-taken");
-      playGame.playRound(getCoordinates(chosenCell));
+
+      const playRound = playGame.playRound(getCoordinates(chosenCell));
+
+      if (playRound.isWinner) {
+        showScore();
+        roundEnd = true;
+        startResetButton.innerText = "Restart ?";
+        return (instructions.innerText = `${
+          playGame.getCurrentPlayer().playerName
+        } has won this round!`);
+      }
+
+      if (playRound.isTieGame) {
+        tieGames++;
+        tieGame(tieGames);
+        roundEnd = true;
+        startResetButton.innerText = "Restart ?";
+        return (instructions.innerText = "It's a tie game!");
+      }
+      return (instructions.innerText = `${
+        playGame.getCurrentPlayer().playerName
+      }'s turn...`);
     } else {
       return;
     }
@@ -302,4 +385,18 @@ const playGame = (function () {
   playerTwoNameInput.addEventListener("input", () => {
     setName(playerTwoNameInput, playerTwoName, 1);
   });
+
+  // Score display:
+
+  const showScore = () => {
+    const playerOneScore = document.querySelector("#playerOneResultText");
+    const playerTwoScore = document.querySelector("#playerTwoResultText");
+    playerOneScore.innerText = `${createPlayers.players[0].score}`;
+    playerTwoScore.innerText = `${createPlayers.players[1].score}`;
+  };
+
+  const tieGame = (tieGames) => {
+    const tieDisplay = document.querySelector("#tieText");
+    tieDisplay.innerText = `${tieGames}`;
+  };
 })();

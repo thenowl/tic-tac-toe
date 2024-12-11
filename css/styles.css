@@ -115,6 +115,7 @@ body {
 
 header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
 
   width: 90%;
@@ -125,6 +126,7 @@ h1 {
   font-family: "Fight Back", sans-serif;
   font-size: clamp(5rem, 20vw, 8rem);
   font-weight: normal;
+  line-height: normal;
   display: flex;
   user-select: none;
 }
@@ -143,6 +145,39 @@ h1 {
   color: var(--playerTwoTokenColor);
 }
 
+.instructions {
+  color: var(--gameBoardBorderColor);
+  letter-spacing: 2px;
+  line-height: 2;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.fake-button {
+  letter-spacing: normal;
+  margin: 0 5px;
+}
+
+.start-reset-button,
+.fake-button {
+  background: var(--bgColor);
+  color: var(--gameBoardBorderColor);
+  text-transform: uppercase;
+  border: 1px solid var(--accentColor);
+  border-radius: 0.5rem;
+
+  padding: 5px 20px;
+}
+
+.start-reset-button {
+  cursor: pointer;
+}
+
+.start-reset-button:hover {
+  background: var(--gameBoardBorderColor);
+  color: var(--bgColor);
+}
+
 .game-board-container {
   display: grid;
   grid-template: repeat(3, minmax(30%, 1fr)) / repeat(3, minmax(30%, 1fr));
@@ -152,8 +187,10 @@ h1 {
 
   background: radial-gradient(var(--gameBoardBorderColor), transparent 75%);
 
-  cursor: pointer;
+  cursor: default;
   user-select: none;
+
+  opacity: 0.1;
 }
 
 .cell-wrapper {
@@ -254,11 +291,49 @@ h1 {
 }
 
 .player-one {
-  background: var(--playerOneTokenColor);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--playerOneTokenColor) 20%,
+    var(--playerOneTokenColor)
+  );
 }
 
 .player-two {
-  background: var(--playerTwoTokenColor);
+  background: linear-gradient(
+    to right,
+    var(--playerTwoTokenColor) 80%,
+    transparent
+  );
+}
+
+.player-one::before,
+.player-two::before {
+  position: absolute;
+  transform: translateY(-50%);
+
+  font-family: "Fight Back", sans-serif;
+  font-size: clamp(10rem, 15vw, 13rem);
+  font-weight: normal;
+
+  text-shadow: -1px -1px 0 var(--accentColor), 1px -1px 0 var(--accentColor),
+    -1px 1px 0 var(--accentColor), 1px 1px 0 var(--accentColor);
+
+  z-index: -1;
+}
+
+.player-one::before {
+  content: "X";
+  top: 50%;
+  left: 0;
+  color: var(--playerOneTokenColor);
+}
+
+.player-two::before {
+  content: "O";
+  top: 60%;
+  right: 0;
+  color: var(--playerTwoTokenColor);
 }
 
 .fa-pen-to-square {
@@ -312,6 +387,20 @@ h1 {
 }
 
 @media (max-width: 700px) {
+  header {
+    width: 100%;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .instructions {
+    order: 3;
+  }
+
+  .start-reset-button {
+    order: 2;
+  }
+
   .results {
     flex-direction: column;
   }
