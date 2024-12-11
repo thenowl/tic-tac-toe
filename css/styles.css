@@ -165,7 +165,6 @@ h1 {
   text-transform: uppercase;
   border: 1px solid var(--accentColor);
   border-radius: 0.5rem;
-
   padding: 5px 20px;
 }
 
@@ -182,15 +181,13 @@ h1 {
   display: grid;
   grid-template: repeat(3, minmax(30%, 1fr)) / repeat(3, minmax(30%, 1fr));
 
+  background: radial-gradient(var(--gameBoardBorderColor), transparent 75%);
   width: 100%;
   max-width: 600px;
-
-  background: radial-gradient(var(--gameBoardBorderColor), transparent 75%);
+  opacity: 0.1;
 
   cursor: default;
   user-select: none;
-
-  opacity: 0.1;
 }
 
 .cell-wrapper {
@@ -256,14 +253,10 @@ h1 {
 
   color: var(--gameBoardBorderColor);
   text-transform: uppercase;
-
-  width: 33%;
-  flex-basis: 33%;
-  width: 200px;
+  width: clamp(200px, 33%, 400px);
   padding: 10px clamp(10px, 2vw, 20px);
   border: none;
   border-radius: 0.8rem;
-
   box-shadow: 0 0 2px var(--gameBoardBorderColor);
 }
 
@@ -315,10 +308,8 @@ h1 {
   font-family: "Fight Back", sans-serif;
   font-size: clamp(10rem, 15vw, 13rem);
   font-weight: normal;
-
   text-shadow: -1px -1px 0 var(--accentColor), 1px -1px 0 var(--accentColor),
     -1px 1px 0 var(--accentColor), 1px 1px 0 var(--accentColor);
-
   z-index: -1;
 }
 
@@ -340,7 +331,6 @@ h1 {
   position: absolute;
   top: 12px;
   right: clamp(10px, 2vw, 20px);
-
   cursor: pointer;
 }
 
@@ -382,7 +372,6 @@ h1 {
   border: none;
   border-radius: 1rem;
   max-width: 180px;
-
   margin: 5px 10px 0 10px;
 }
 
