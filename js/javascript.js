@@ -333,17 +333,6 @@ const playGame = (function () {
   });
 
   // Handling the name input for each player:
-
-  const toggleNameInputDisplay = (inputContainer, input) => {
-    if (window.getComputedStyle(inputContainer).visibility === "hidden") {
-      inputContainer.style.visibility = "visible";
-      input.setAttribute("value", "");
-      input.focus();
-    } else {
-      inputContainer.style.visibility = "hidden";
-    }
-  };
-
   const playerOneInputDisplay = document.querySelector(
     "#playerOneInputDisplay"
   );
@@ -354,6 +343,17 @@ const playGame = (function () {
   const playerTwoNameInput = document.querySelector("#playerTwoNameInput");
   const playerOneName = document.querySelector("#playerOneName");
   const playerTwoName = document.querySelector("#playerTwoName");
+
+  const toggleNameInputDisplay = (inputContainer, input) => {
+    if (window.getComputedStyle(inputContainer).visibility === "hidden") {
+      inputContainer.style.visibility = "visible";
+
+      input.setAttribute("value", "");
+      input.focus();
+    } else {
+      inputContainer.style.visibility = "hidden";
+    }
+  };
 
   playerOneInputDisplay.addEventListener("click", () => {
     const playerOneInputContainer = document.querySelector(
