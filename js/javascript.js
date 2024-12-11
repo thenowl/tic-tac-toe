@@ -291,9 +291,10 @@ const playGame = (function () {
 
   // Place token on game board:
 
+  let tieGames = 0;
+
   gameBoardContainer.addEventListener("mouseup", (e) => {
     const chosenCell = e.target;
-    let tieGames = 0;
 
     if (
       startGame &&
